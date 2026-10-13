@@ -3,8 +3,8 @@
 ----
 | Nama | NRP |
 | ---------------------- | ---------- |
-| Dea Chrisna Butarbutar | 5027241035 |
-| Pradipta Airlangga Ramadhan | 5027241118 |
+| Dea Chrisna Butarbutar | 5027251035 |
+| Pradipta Airlangga Ramadhan | 5027251118 |
 ----
 
 # IP Address Host : 10.4.89.247
