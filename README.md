@@ -13,7 +13,7 @@
 
 # Curtain Protocol: Shibuya Incident
 
-Author: Author: alchemiststs & deefen
+Author: alchemiststs & deefen
 
 ![alt text](photo/image.png)
 
