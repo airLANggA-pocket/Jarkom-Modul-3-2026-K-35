@@ -50,3 +50,13 @@ fi
 
 nginx -t && service nginx reload
 EOF
+
+cat > soal_20_bukti.sh <<'EOF'
+#!/bin/sh
+echo "=== KONFIGURASI ==="
+grep -n 'limit_req' /etc/nginx/conf.d/reverse-proxy.conf
+echo "=== ACCESS LOG ==="
+grep '/api' /var/log/nginx/access.log | tail -n 10
+echo "=== RATE LIMIT LOG ==="
+grep 'limiting requests' /var/log/nginx/error.log | tail -n 10
+EOF
