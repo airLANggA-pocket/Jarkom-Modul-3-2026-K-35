@@ -956,10 +956,74 @@ ping -c 2 <gateway-network-nya>
 ping -c 2 8.8.8.8
 ```
 
-
-
-untuk melihat lease time pada client alternatifnya lihat di tengen
+Untuk melihat lease time pada client alternatifnya lihat di tengen
 ```
 grep -E "^lease|starts|ends|hardware ethernet" /var/lib/dhcp/dhcpd.leases
 ```
 ![alt text](photo/image-28.png)
+
+
+## Soal_11
+Utahime dan Shoko ditugaskan membangun sistem penamaan domain resmi agar seluruh pos tidak perlu menghafal alamat IP mentah. Konfigurasikan BIND9 pada utahime sebagai DNS Master dan shoko sebagai DNS Slave untuk mengelola domain jujutsu.<xxxx>.com. Atur SOA record, NS delegasi untuk kedua server, dan terapkan allow-transfer dari Master ke Slave. Pastikan file zona berhasil tersinkronisasi otomatis ke shoko saat nomor serial di utahime dinaikkan, lalu buktikan dengan melakukan query dig ke kedua server dari salah satu client.
+
+Pertama, kita melakukan update dan install bind9 dahulu di node Utahime sebagai DNS Master.
+
+```
+apt-get update
+apt-get install bind9 -y
+ln -s /etc/init.d/named /etc/init.d/bind9
+```
+Kemudian, pada file ini dilakukan konfigurasi dengan mengaktifkan fitur notify dann allow-transfer ke DNS Slave yaitu Shoko.
+```
+mkdir /etc/bind/k35/k35.com
+cat <<EOF > /etc/bind/named.conf.local
+zone "jujutsu.k35.com" {
+  type master;
+  notify yes;
+  also-notify { 10.81.1.3; };
+  allow-transfer { 10.81.1.3; };
+  file "/etc/bind/k35/jujutsu.k35.com";
+};
+EOF
+```
+Selanjutnya, konfigurasi utahime sebagai DNS Master.
+mkdir /etc/bind/k35
+```
+cat <<EOF > /etc/bind/k35/jujutsu.k35.com
+$TTL    604800          ; Waktu cache default (detik)
+@       IN      SOA     utahime.k35.com. admin.k35.com. (
+                        2026101201 ; Serial (format YYYYMMDDXX)
+                        604800     ; Refresh (1 minggu)
+                        86400      ; Retry (1 hari)
+                        2419200    ; Expire (4 minggu)
+                        604800     ; Negative Cache TTL
+)
+
+@       IN      NS      utahime.k35.com.
+@       IN      NS      shoko.k35.com.
+EOF
+```
+
+Untuk menyimpan perubahan, dilakukan restart.
+```
+service bind9 restart
+```
+Untuk memeriksa, kita melakukan test ping:
+```
+ping -c 5 jujutsu.k35.com
+```
+Pada DNS Slave yaitu Shoko, kita menginstall 
+
+apt-get update
+apt-get install bind9 -y
+ln -s /etc/init.d/named /etc/init.d/bind9
+
+cat <<EOF > /etc/bind/named.conf.local
+zone "jujutsu.k35.com" {
+    type slave;
+    masters { 10.81.1.2; };
+    file "/var/cache/bind/jujutsu.k35.com";
+};
+EOF
+
+service bind9 restart
